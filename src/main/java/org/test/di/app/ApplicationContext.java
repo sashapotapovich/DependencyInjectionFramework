@@ -4,16 +4,15 @@ import org.test.di.factory.BeanFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.test.di.factory.BeanFactoryFacade;
-import org.test.di.service.ServiceLocator;
 
 public class ApplicationContext {
     
-    private static final Logger log = LoggerFactory.getLogger(ApplicationContext.class);
-    private ServiceLocator serviceLocator = new ServiceLocator();
+    private static final Logger LOG = LoggerFactory.getLogger(ApplicationContext.class);
     
     private BeanFactoryFacade beanFactoryFacade = new BeanFactoryFacade();
 
     public ApplicationContext(String basePackage) {
+        LOG.info("          ==========   Welcome   ==========          ");
         beanFactoryFacade.initiate(basePackage);
     }
     

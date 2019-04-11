@@ -9,6 +9,13 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+sourceSets {
+    main.java.srcDirs = ['src/main/java']
+    main.resources.srcDirs = ['src/main/resources']
+    test.java.srcDirs = ['src/test/java']
+    test.resources.srcDirs = ['src/test/resources']
+}
+
 repositories {
     mavenCentral()
 }
@@ -16,8 +23,8 @@ repositories {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.Application',
-                'Class-Path': './',
+                'Main-Class': 'org.test.Application',
+                /*'Class-Path': './',*/
         )
     }
 }

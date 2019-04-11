@@ -5,18 +5,20 @@ import org.slf4j.LoggerFactory;
 
 public class BeanFactoryFacade {
 
-    private static final Logger log = LoggerFactory.getLogger(BeanFactoryFacade.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(BeanFactoryFacade.class);
+
     private BeanFactory beanFactory = new BeanFactory();
 
 
     public void initiate(String basePackage) {
-        log.info("****** Context is under construction ******");
+        LOG.info("Context is under construction");
         beanFactory.instantiate(basePackage);
-        log.info("****** Populating properties ******");
+        LOG.info("Bean Post Processors before initialization Beans");
+        beanFactory.processBeforeBeanInitialization();
+        LOG.info("Initializing Beans");
         beanFactory.populateProperties();
-        log.info("****** Initializing Beans ******");
-        beanFactory.initializeBeans();
+        LOG.info("Bean Post Processors after initialization Beans");
+        beanFactory.processAfterBeanInitialization();
     }
 
     public BeanFactory getBeanFactory() {

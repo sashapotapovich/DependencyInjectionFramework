@@ -3,6 +3,7 @@ package org.test.di.factory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -109,14 +110,13 @@ public class BeanFactory {
             Enumeration<URL> resourceUrls = classLoader.getResources(path);
             while (resourceUrls.hasMoreElements()) {
                 URL url = resourceUrls.nextElement();
-                File file = null;
-                try {
-                    file = new File(url.toURI());
-                } catch (IllegalArgumentException e) {
-                    LOG.error("We are in the JAR file, so will work with file system as with jar");
+                URI uri = url.toURI();
+                if (uri.isOpaque()){
+                    LOG.info("We are in the JAR file, so will work with file system as with jar");
                     forJar(path);
                     return;
                 }
+                File file = new File(uri);
                 for (File classFile : file.listFiles()) {
                     if (classFile.isDirectory()) {
                         LOG.info("We located subderictory - {}", classFile.getAbsolutePath());

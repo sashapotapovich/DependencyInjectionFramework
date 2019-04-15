@@ -22,7 +22,7 @@ public class Cache {
     }
 
     public Object getBean(String beanName) {
-        LOG.info("Trying to get Bean from Cache - " + beanName);
+        LOG.info("Trying to get Bean from Cache - {}", beanName);
         return beans.get(beanName);
     }
     
@@ -31,7 +31,7 @@ public class Cache {
     }
 
     public void addBean(String beanName, Object bean) {
-        LOG.info("Adding new Bean to Cache - " + beanName);
+        LOG.info("Adding new Bean to Cache - {}", beanName);
         beans.put(beanName, bean);
     }
     

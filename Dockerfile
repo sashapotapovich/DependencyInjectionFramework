@@ -1,5 +1,9 @@
 FROM openjdk:8
 MAINTAINER sashapotapovich@gmail.com
 COPY ./build/libs/ /tmp
+COPY startup.sh /tmp
+RUN cd /tmp
 WORKDIR /tmp
-CMD java -jar testForDIFrmwrk-1.0-SNAPSHOT-all.jar
+RUN ls -a
+RUN chmod u+x startup.sh
+ENTRYPOINT ./startup.sh

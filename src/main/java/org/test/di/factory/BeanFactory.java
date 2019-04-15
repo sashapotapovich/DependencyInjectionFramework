@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.test.di.annotations.Autowired;
@@ -32,68 +34,117 @@ public class BeanFactory {
     private ProxyBeanGenerationStrategy proxyStrategy = new ProxyBeanGenerationStrategy();
     private SingletonBeanGenerationStrategy singletonStrategy = new SingletonBeanGenerationStrategy();
 
-    public void addPostProcessor(BeanPostProcessor postProcessor) {
+    private void addPostProcessor(BeanPostProcessor postProcessor) {
         LOG.info("Registering Bean Post Processors");
         postProcessors.add(postProcessor);
     }
 
+    private void registerBeans(Class classObject, String className) {
+        try {
+            if (classObject.isAnnotationPresent(Component.class)) {
+                LOG.info("Found new Component - {}", classObject);
+                Object instance = classObject.newInstance();
+                if (instance instanceof BeanPostProcessor) {
+                    BeanPostProcessor postProcessor = (BeanPostProcessor) instance;
+                    addPostProcessor(postProcessor);
+                    return;
+                }
+                Component component = (Component) classObject.getAnnotation(Component.class);
+                Scope value = component.value();
+                String beanName = className.substring(0, 1).toLowerCase() + className.substring(1);
+                LOG.info("Generated BEAN name - {}", beanName);
+                if (value.equals(Scope.PROXY)) {
+                    proxyList.add(beanName);
+                }
+                Cache.getInstance().addBean(beanName, instance);
+                for (Field field : classObject.getDeclaredFields()) {
+                    if (field.isAnnotationPresent(Autowired.class)) {
+                        String fieldName = field.getName();
+                        autowereCangidates.put(fieldName, new Pair<>(field, instance));
+                    }
+                }
+            }
+        } catch (IllegalAccessException | InstantiationException e) {
+            LOG.error(e.toString());
+        }
+    }
+
+    private void forJar(String path) {
+        File jarFile = null;
+        try {
+            jarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        } catch (URISyntaxException e) {
+            LOG.error(e.toString());
+        }
+        String actualFile = jarFile.getParentFile().getAbsolutePath() + File.separator + "testForDIFrmwrk-1.0-SNAPSHOT-all.jar";
+        LOG.info("jarFile is : {}", jarFile.getAbsolutePath());
+        LOG.info("actulaFilePath is : {}", actualFile);
+        final JarFile jar;
+        try {
+            jar = new JarFile(actualFile);
+            List<String> collect = jar.stream()
+                                      .filter(jarEntry -> jarEntry.getName().startsWith(path))
+                                      .filter(jarEntry -> !jarEntry.isDirectory())
+                                      .map(ZipEntry::getName)
+                                      .collect(Collectors.toList());
+            for (String className : collect) {
+                className = className.replaceAll("/", ".").substring(0, className.length() - 6);
+                LOG.info("JAR ClassName - {}", className);
+                Class classObject = Class.forName(className);
+                className = className.substring(className.lastIndexOf('.') + 1);
+                registerBeans(classObject, className);
+            }
+            jar.close();
+        } catch (IOException | ClassNotFoundException e) {
+            LOG.error(e.toString());
+        }
+    }
+
+
     public void instantiate(String basePackage) {
         try {
             ClassLoader classLoader = ClassUtil.getClassLoader();
-            String path = basePackage.replace('.', File.separatorChar);
+            String path = basePackage.replace('.', '/');
+            LOG.info("Path created - {}", path);
             Enumeration<URL> resourceUrls = classLoader.getResources(path);
             while (resourceUrls.hasMoreElements()) {
                 URL url = resourceUrls.nextElement();
-                File file = Paths.get(url.toURI()).toFile();
+                File file = null;
+                try {
+                    file = new File(url.toURI());
+                } catch (IllegalArgumentException e) {
+                    LOG.error("We are in the JAR file, so will work with file system as with jar");
+                    forJar(path);
+                    return;
+                }
                 for (File classFile : file.listFiles()) {
                     if (classFile.isDirectory()) {
-                        LOG.info("We located subderictory - " + classFile.getAbsolutePath());
+                        LOG.info("We located subderictory - {}", classFile.getAbsolutePath());
                         instantiate(basePackage + "." + classFile.getName());
                         continue;
                     }
+                    LOG.info("Running for the file - {}", classFile.getAbsolutePath());
                     String fileName = classFile.getName();
                     String className = null;
                     if (fileName.endsWith(".class")) {
-                        className = fileName.substring(0, fileName.lastIndexOf("."));
+                        className = fileName.substring(0, fileName.lastIndexOf('.'));
                     }
                     Class classObject = Class.forName(basePackage + "." + className);
-                    if (classObject.isAnnotationPresent(Component.class)) {
-                        LOG.info("Found new Component - " + classObject);
-                        Object instance = classObject.newInstance();
-                        if (instance instanceof BeanPostProcessor) {
-                            BeanPostProcessor postProcessor = (BeanPostProcessor) instance;
-                            addPostProcessor(postProcessor);
-                            break;
-                        }
-                        Component component = (Component) classObject.getAnnotation(Component.class);
-                        Scope value = component.value();
-                        String beanName = className.substring(0, 1).toLowerCase() + className.substring(1);
-                        if (value.equals(Scope.PROXY)) {
-                            proxyList.add(beanName);
-                        }
-                        Cache.getInstance().addBean(beanName, instance);
-                        for (Field field : classObject.getDeclaredFields()) {
-                            if (field.isAnnotationPresent(Autowired.class)) {
-                                String fieldName = field.getName();
-                                autowereCangidates.put(fieldName, new Pair<>(field, instance));
-                            }
-                        }
-                    }
-
+                    registerBeans(classObject, className);
                 }
             }
-        } catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException | URISyntaxException e) {
+        } catch (IOException | ClassNotFoundException | URISyntaxException e) {
             LOG.error(e.toString());
         }
     }
 
     public void populateProperties() {
         try {
-            autowereCangidates.keySet().forEach(value -> LOG.info("Autowire Candidates held in list - " + value));
+            autowereCangidates.keySet().forEach(value -> LOG.info("Autowire Candidates held in list - {}", value));
             for (String beanName : autowereCangidates.keySet()) {
                 Pair<Field, Object> pair = autowereCangidates.get(beanName);
                 Field field = pair.getLeft();
-                LOG.info("Autowiring Field - " + field.toGenericString());
+                LOG.info("Autowiring Field - {}", field.toGenericString());
                 field.setAccessible(true);
                 if (proxyList.contains(beanName)) {
                     Object bean = ServiceLocator.getBean(beanName, proxyStrategy);
@@ -119,7 +170,7 @@ public class BeanFactory {
             }
         }
     }
-    
+
     public void processAfterBeanInitialization() {
         if (!postProcessors.isEmpty()) {
             for (String name : Cache.getInstance().getAllBeanNames()) {

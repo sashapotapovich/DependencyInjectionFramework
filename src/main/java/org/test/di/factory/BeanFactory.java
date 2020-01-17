@@ -3,6 +3,7 @@ package org.test.di.factory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.test.di.annotations.Autowired;
 import org.test.di.annotations.Component;
+import org.test.di.annotations.PostConstruct;
 import org.test.di.annotations.Scope;
 import org.test.di.config.BeanPostProcessor;
 import org.test.di.service.Cache;
@@ -29,7 +31,7 @@ import org.test.di.utils.Pair;
 public class BeanFactory {
     private static final Logger LOG = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Map<String, Pair<Field, Object>> autowereCangidates = new HashMap<>();
+    private Map<String, Pair<Field, Object>> autowireCandidates = new HashMap<>();
     private List<BeanPostProcessor> postProcessors = new ArrayList<>();
     private List<String> proxyList = new ArrayList<>();
     private ProxyBeanGenerationStrategy proxyStrategy = new ProxyBeanGenerationStrategy();
@@ -40,7 +42,7 @@ public class BeanFactory {
         postProcessors.add(postProcessor);
     }
 
-    private void registerBeans(Class classObject, String className) {
+    private void registerBeans(Class<?> classObject, String className) {
         try {
             if (classObject.isAnnotationPresent(Component.class)) {
                 LOG.info("Found new Component - {}", classObject);
@@ -61,7 +63,7 @@ public class BeanFactory {
                 for (Field field : classObject.getDeclaredFields()) {
                     if (field.isAnnotationPresent(Autowired.class)) {
                         String fieldName = field.getName();
-                        autowereCangidates.put(fieldName, new Pair<>(field, instance));
+                        autowireCandidates.put(fieldName, new Pair<>(field, instance));
                     }
                 }
             }
@@ -91,7 +93,7 @@ public class BeanFactory {
             for (String className : collect) {
                 className = className.replaceAll("/", ".").substring(0, className.length() - 6);
                 LOG.info("JAR ClassName - {}", className);
-                Class classObject = Class.forName(className);
+                Class<?> classObject = Class.forName(className);
                 className = className.substring(className.lastIndexOf('.') + 1);
                 registerBeans(classObject, className);
             }
@@ -140,9 +142,9 @@ public class BeanFactory {
 
     public void populateProperties() {
         try {
-            autowereCangidates.keySet().forEach(value -> LOG.info("Autowire Candidates held in list - {}", value));
-            for (String beanName : autowereCangidates.keySet()) {
-                Pair<Field, Object> pair = autowereCangidates.get(beanName);
+            autowireCandidates.keySet().forEach(value -> LOG.info("Autowire Candidates held in list - {}", value));
+            for (String beanName : autowireCandidates.keySet()) {
+                Pair<Field, Object> pair = autowireCandidates.get(beanName);
                 Field field = pair.getLeft();
                 LOG.info("Autowiring Field - {}", field.toGenericString());
                 field.setAccessible(true);

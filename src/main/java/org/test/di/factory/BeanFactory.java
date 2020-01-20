@@ -29,7 +29,7 @@ import org.test.di.utils.ClassUtil;
 import org.test.di.utils.Pair;
 
 public class BeanFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(BeanFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(BeanFactory.class);
 
     private Map<String, Pair<Field, Object>> autowireCandidates = new HashMap<>();
     private List<BeanPostProcessor> postProcessors = new ArrayList<>();
@@ -38,14 +38,14 @@ public class BeanFactory {
     private SingletonBeanGenerationStrategy singletonStrategy = new SingletonBeanGenerationStrategy();
 
     private void addPostProcessor(BeanPostProcessor postProcessor) {
-        LOG.info("Registering Bean Post Processors");
+        log.info("Registering Bean Post Processors");
         postProcessors.add(postProcessor);
     }
 
     private void registerBeans(Class<?> classObject, String className) {
         try {
             if (classObject.isAnnotationPresent(Component.class)) {
-                LOG.info("Found new Component - {}", classObject);
+                log.info("Found new Component - {}", classObject);
                 Object instance = classObject.newInstance();
                 if (instance instanceof BeanPostProcessor) {
                     BeanPostProcessor postProcessor = (BeanPostProcessor) instance;
@@ -55,7 +55,7 @@ public class BeanFactory {
                 Component component = (Component) classObject.getAnnotation(Component.class);
                 Scope value = component.value();
                 String beanName = className.substring(0, 1).toLowerCase() + className.substring(1);
-                LOG.info("Generated BEAN name - {}", beanName);
+                log.info("Generated BEAN name - {}", beanName);
                 if (value.equals(Scope.PROXY)) {
                     proxyList.add(beanName);
                 }
@@ -68,7 +68,7 @@ public class BeanFactory {
                 }
             }
         } catch (IllegalAccessException | InstantiationException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
         }
     }
 
@@ -77,11 +77,11 @@ public class BeanFactory {
         try {
             jarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
         } catch (URISyntaxException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
         }
         String actualFile = jarFile.getParentFile().getAbsolutePath() + File.separator + "testForDIFrmwrk-1.0-SNAPSHOT-all.jar";
-        LOG.info("jarFile is : {}", jarFile.getAbsolutePath());
-        LOG.info("actulaFilePath is : {}", actualFile);
+        log.info("jarFile is : {}", jarFile.getAbsolutePath());
+        log.info("actulaFilePath is : {}", actualFile);
         final JarFile jar;
         try {
             jar = new JarFile(actualFile);
@@ -92,14 +92,14 @@ public class BeanFactory {
                                       .collect(Collectors.toList());
             for (String className : collect) {
                 className = className.replaceAll("/", ".").substring(0, className.length() - 6);
-                LOG.info("JAR ClassName - {}", className);
+                log.info("JAR ClassName - {}", className);
                 Class<?> classObject = Class.forName(className);
                 className = className.substring(className.lastIndexOf('.') + 1);
                 registerBeans(classObject, className);
             }
             jar.close();
         } catch (IOException | ClassNotFoundException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
         }
     }
 
@@ -108,24 +108,24 @@ public class BeanFactory {
         try {
             ClassLoader classLoader = ClassUtil.getClassLoader();
             String path = basePackage.replace('.', '/');
-            LOG.info("Path created - {}", path);
+            log.info("Path created - {}", path);
             Enumeration<URL> resourceUrls = classLoader.getResources(path);
             while (resourceUrls.hasMoreElements()) {
                 URL url = resourceUrls.nextElement();
                 URI uri = url.toURI();
                 if (uri.isOpaque()){
-                    LOG.info("We are in the JAR file, so will work with file system as with jar");
+                    log.info("We are in the JAR file, so will work with file system as with jar");
                     forJar(path);
                     return;
                 }
                 File file = new File(uri);
                 for (File classFile : file.listFiles()) {
                     if (classFile.isDirectory()) {
-                        LOG.info("We located subderictory - {}", classFile.getAbsolutePath());
+                        log.info("We located subderictory - {}", classFile.getAbsolutePath());
                         instantiate(basePackage + "." + classFile.getName());
                         continue;
                     }
-                    LOG.info("Running for the file - {}", classFile.getAbsolutePath());
+                    log.info("Running for the file - {}", classFile.getAbsolutePath());
                     String fileName = classFile.getName();
                     String className = null;
                     if (fileName.endsWith(".class")) {
@@ -136,17 +136,17 @@ public class BeanFactory {
                 }
             }
         } catch (IOException | ClassNotFoundException | URISyntaxException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
         }
     }
 
     public void populateProperties() {
         try {
-            autowireCandidates.keySet().forEach(value -> LOG.info("Autowire Candidates held in list - {}", value));
+            autowireCandidates.keySet().forEach(value -> log.info("Autowire Candidates held in list - {}", value));
             for (String beanName : autowireCandidates.keySet()) {
                 Pair<Field, Object> pair = autowireCandidates.get(beanName);
                 Field field = pair.getLeft();
-                LOG.info("Autowiring Field - {}", field.toGenericString());
+                log.info("Autowiring Field - {}", field.toGenericString());
                 field.setAccessible(true);
                 if (proxyList.contains(beanName)) {
                     Object bean = ServiceLocator.getBean(beanName, proxyStrategy);
@@ -158,7 +158,7 @@ public class BeanFactory {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
         }
     }
 

@@ -17,7 +17,7 @@
         </encoder>
     </appender>
 
-    <!-- Configure so that it outputs to both console and LOG file -->
+    <!-- Configure so that it outputs to both console and log file -->
     <root level="ALL">
         <appender-ref ref="stdout" />
     </root>

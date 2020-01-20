@@ -6,7 +6,7 @@ import org.test.di.factory.BeanGenerationStrategy;
 
 public class ServiceLocator {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ServiceLocator.class);
+    private static final Logger log = LoggerFactory.getLogger(ServiceLocator.class);
 
     private ServiceLocator() {
     }
@@ -21,7 +21,7 @@ public class ServiceLocator {
 
         InitialContext context = new InitialContext();
         Object beanProxy = context.lookup(beanName);
-        LOG.error("Uuuups, Something went wrong");
+        log.error("Uuuups, Something went wrong");
         return beanProxy;
     }
 }

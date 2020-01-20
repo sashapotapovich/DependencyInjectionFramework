@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Cache {
-    private static final Logger LOG = LoggerFactory.getLogger(Cache.class);
+    private static final Logger log = LoggerFactory.getLogger(Cache.class);
     
     private static Cache instance = null;
     private final HashMap<String, Object> beans = new HashMap<>();
@@ -22,7 +22,7 @@ public class Cache {
     }
 
     public Object getBean(String beanName) {
-        LOG.info("Trying to get Bean from Cache - {}", beanName);
+        log.info("Trying to get Bean from Cache - {}", beanName);
         return beans.get(beanName);
     }
     
@@ -31,7 +31,7 @@ public class Cache {
     }
 
     public void addBean(String beanName, Object bean) {
-        LOG.info("Adding new Bean to Cache - {}", beanName);
+        log.info("Adding new Bean to Cache - {}", beanName);
         beans.put(beanName, bean);
     }
     

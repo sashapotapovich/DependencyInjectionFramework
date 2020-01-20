@@ -13,15 +13,15 @@ import org.test.di.config.BeanPostProcessor;
 @Component
 public class PostConstructPostProcessor implements BeanPostProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostConstructPostProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(PostConstructPostProcessor.class);
     
     @Override
     public Object postProcessBeforeInitialization(String beanName, Object bean) {
-        LOG.info("Post Construct Method Before");
+        log.info("Post Construct Method Before");
         for (Method method : bean.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(PostConstruct.class)){
                 if (method.getParameterTypes().length != 0){
-                    LOG.error("Initialization method should not accept parameters, Bean name - {}", beanName);
+                    log.error("Initialization method should not accept parameters, Bean name - {}", beanName);
                     throw new ExceptionInInitializerError("Initialization method should not accept parameters");
                 }
                 try {
@@ -29,7 +29,7 @@ public class PostConstructPostProcessor implements BeanPostProcessor {
                     method.invoke(bean);
                     method.setAccessible(false);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    LOG.error(e.getMessage());
+                    log.error(e.getMessage());
                     throw new RuntimeException("Unable to initialize Bean - " + beanName);
                 }
             }

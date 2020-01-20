@@ -7,17 +7,13 @@ import org.test.di.factory.BeanFactoryFacade;
 
 public class ApplicationContext {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ApplicationContext.class);
+    private static final Logger log = LoggerFactory.getLogger(ApplicationContext.class);
     
     private BeanFactoryFacade beanFactoryFacade = new BeanFactoryFacade();
 
     public ApplicationContext(String basePackage) {
-        LOG.info("          ==========   Welcome   ==========          ");
+        log.info("          ==========   Welcome   ==========          ");
         beanFactoryFacade.initiate(basePackage);
-    }
-    
-    public Object getBean(String beanName){
-        return null;
     }
 
     public BeanFactory getBeanFactory(){

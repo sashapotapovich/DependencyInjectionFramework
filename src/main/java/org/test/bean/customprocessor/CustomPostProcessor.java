@@ -8,17 +8,17 @@ import org.test.di.config.BeanPostProcessor;
 @Component
 public class CustomPostProcessor implements BeanPostProcessor {
     
-    private static final Logger LOG = LoggerFactory.getLogger(CustomPostProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(CustomPostProcessor.class);
     
     @Override
     public Object postProcessBeforeInitialization(String beanName, Object bean) {
-        LOG.info("Running CustomPostProcessor Before Init for Bean - {}", beanName);
+        log.info("Running CustomPostProcessor Before Init for Bean - {}", beanName);
         return bean;
     }
 
     @Override
     public Object postProcessAfterInitialization(String beanName, Object bean) {
-        LOG.info("Running CustomPostProcessor After Init for Bean - {}", beanName);
+        log.info("Running CustomPostProcessor After Init for Bean - {}", beanName);
         return bean;
     }
 }

@@ -6,11 +6,11 @@ import org.test.di.service.Cache;
 
 public class SingletonBeanGenerationStrategy implements BeanGenerationStrategy {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SingletonBeanGenerationStrategy.class);
+    private static final Logger log = LoggerFactory.getLogger(SingletonBeanGenerationStrategy.class);
 
     @Override
     public Object getBean(String beanName) {
-        LOG.info("Trying to get Bean as Singleton");
+        log.info("Trying to get Bean as Singleton");
         return Cache.getInstance().getBean(beanName);
     }
 }

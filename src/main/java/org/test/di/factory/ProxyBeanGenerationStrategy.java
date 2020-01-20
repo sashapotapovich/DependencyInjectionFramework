@@ -10,11 +10,11 @@ import org.test.di.service.Cache;
 
 public class ProxyBeanGenerationStrategy implements BeanGenerationStrategy {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ProxyBeanGenerationStrategy.class);
+    private static final Logger log = LoggerFactory.getLogger(ProxyBeanGenerationStrategy.class);
     
     @Override
     public Object getBean(String beanName) {
-        LOG.info("Trying to get Bean as Proxy");
+        log.info("Trying to get Bean as Proxy");
         Object bean = Cache.getInstance().getBean(beanName);
         Class<?> beanClass = bean.getClass();
         Class[] genericInterfaces = beanClass.getInterfaces();

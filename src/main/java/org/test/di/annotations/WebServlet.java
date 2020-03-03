@@ -5,9 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Component {
-
-    int priority() default 20;
+@Retention(RetentionPolicy.RUNTIME)
+public @interface WebServlet {
+    String value() default "";
 }

@@ -1,8 +1,12 @@
 package org.test.di.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.test.di.factory.BeanGenerationStrategy;
+import org.test.di.exceptions.BeanNotFoundException;
+import org.test.di.factory.Bean;
 
 public class ServiceLocator {
     
@@ -11,17 +15,20 @@ public class ServiceLocator {
     private ServiceLocator() {
     }
 
-    public static Object getBean(String beanName, BeanGenerationStrategy strategy) {
-        
-        Object bean = strategy.getBean(beanName);
-
-        if (bean != null) {
-            return bean;
+    public static Bean getBean(String beanName) throws BeanNotFoundException {
+        Optional<Bean> bean = Cache.getInstance().getBean(beanName);
+        return bean.orElseThrow(() -> new BeanNotFoundException("Bean - " + beanName + " was not found!"));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Collection<Object> getAllBeansForType(Class<?> genericType) {
+        Collection<Bean> allBeans = Cache.getInstance().getAllBeans();
+        Collection<Object> beans = new ArrayList<>();
+        for (Bean bean : allBeans) {
+            if (genericType.isAssignableFrom(bean.getInstance().getClass())){
+                beans.add(bean.getInstance());
+            }
         }
-
-        InitialContext context = new InitialContext();
-        Object beanProxy = context.lookup(beanName);
-        log.error("Uuuups, Something went wrong");
-        return beanProxy;
+        return beans;
     }
 }

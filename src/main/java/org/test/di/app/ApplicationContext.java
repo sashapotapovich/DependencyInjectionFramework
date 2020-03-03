@@ -1,8 +1,9 @@
 package org.test.di.app;
 
-import org.test.di.factory.BeanFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.test.di.factory.Bean;
+import org.test.di.factory.BeanFactory;
 import org.test.di.factory.BeanFactoryFacade;
 
 public class ApplicationContext {
@@ -16,6 +17,15 @@ public class ApplicationContext {
         beanFactoryFacade.initiate(basePackage);
     }
 
+    public Object getBean(String beanName){
+        Bean bean = beanFactoryFacade.getBeanFactory().getBean(beanName);
+        return bean.getInstance();
+    }
+    
+    public static ApplicationContext run(){
+        return new ApplicationContext("");
+    }
+    
     public BeanFactory getBeanFactory(){
         return beanFactoryFacade.getBeanFactory();
     }

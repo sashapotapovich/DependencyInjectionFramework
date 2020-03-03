@@ -2,18 +2,28 @@ plugins {
     id 'java'
 }
 
-apply plugin: 'java'
-
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 sourceSets {
-    main.java.srcDirs = ['src/main/java']
-    main.resources.srcDirs = ['src/main/resources']
-    test.java.srcDirs = ['src/test/java']
-    test.resources.srcDirs = ['src/test/resources']
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+    test {
+        java {
+            srcDir 'src/org.test/java'
+        }
+        resources {
+            srcDir 'src/org.test/resources'
+        }
+    }
 }
 
 repositories {
@@ -23,7 +33,7 @@ repositories {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.test.Application',
+                'Main-Class': 'org.org.test.Application',
                 /*'Class-Path': './',*/
         )
     }
@@ -31,7 +41,7 @@ jar {
 
 task fatJar(type: Jar) {
     manifest.from jar.manifest
-    classifier = 'all'
+    archiveClassifier = 'all'
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
@@ -39,8 +49,8 @@ task fatJar(type: Jar) {
 }
 
 dependencies {
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
     compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.2'
-    compile group: 'ch.qos.logback', name:'logback-classic', version: '1.0.9'
-    compile group: 'ch.qos.logback', name:'logback-core', version: '1.0.9'
-    compile group: 'cglib', name: 'cglib', version: '3.2.10'
+    compile group: 'ch.qos.logback', name:'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name:'logback-core', version: '1.2.3'
 }

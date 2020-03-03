@@ -1,6 +1,11 @@
 package org.test.di.utils;
 
-public class Pair<L, R> {
+import java.io.Serializable;
+
+public class Pair<L, R> implements Serializable {
+    
+    private static final long serialVersionUID = 2231632513145237208L;
+    
     private L left;
     private R right;
 
@@ -15,5 +20,13 @@ public class Pair<L, R> {
 
     public R getRight() {
         return right;
+    }
+
+    @Override
+    public String toString() {
+        return "Pair{" +
+                "left=" + left +
+                ", right=" + right +
+                '}';
     }
 }
